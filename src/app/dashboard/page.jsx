@@ -6,8 +6,10 @@ import StatsChart from "../../../components/StatsChart";
 
 export default function Dashboard() {
   const router = useRouter();
-  const [statsHistory, setStatsHistory] = useState([]); // Store historical data
+  const [statsHistory, setStatsHistory] = useState([]); // Store system stats history
+  const [userProcesses, setUserProcesses] = useState([]); // Store user processes
   const [loading, setLoading] = useState(true);
+  const [processLoading, setProcessLoading] = useState(true);
 
   useEffect(() => {
     const auth = localStorage.getItem("isAuthenticated");
@@ -16,13 +18,18 @@ export default function Dashboard() {
     }
   }, [router]);
 
+  // Automatically get the server IP dynamically
+  const API_BASE_URL =
+  typeof window !== "undefined" ? `http://${window.location.hostname}:9090` : "http://localhost:9090";
+
+
+  // Fetch system stats
   const fetchStats = async () => {
     try {
-      const response = await fetch("http://localhost:9090/api/stats");
-      if (!response.ok) throw new Error("Failed to fetch data");
+      const response = await fetch(`${API_BASE_URL}/api/stats`);
+      if (!response.ok) throw new Error("Failed to fetch stats");
 
       const newData = await response.json();
-
       if (!Array.isArray(newData)) {
         console.error("Invalid data format: Expected an array", newData);
         return;
@@ -36,9 +43,33 @@ export default function Dashboard() {
     }
   };
 
+  // Fetch user processes
+  const fetchUserProcesses = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/processes`);
+      if (!response.ok) throw new Error("Failed to fetch user processes");
+
+      const processData = await response.json();
+      if (!Array.isArray(processData)) {
+        console.error("Invalid process data format: Expected an array", processData);
+        return;
+      }
+
+      setUserProcesses(processData);
+      setProcessLoading(false);
+    } catch (error) {
+      console.error("Error fetching user processes:", error);
+      setProcessLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 3000);
+    fetchUserProcesses();
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchUserProcesses();
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -102,6 +133,31 @@ export default function Dashboard() {
 
       {/* Chart with Historical Data */}
       <StatsChart data={statsHistory} hideXAxisLabels />
+
+      {/* User Processes List */}
+      <div className="mt-8">
+        <h3 className="text-2xl font-semibold text-green-400 mb-4">
+          Active Processes
+        </h3>
+        {processLoading ? (
+          <p className="text-gray-400">Loading processes...</p>
+        ) : userProcesses.length === 0 ? (
+          <p className="text-red-400">No active processes found.</p>
+        ) : (
+          <ul className="bg-gray-800 p-4 rounded-lg shadow-lg">
+  {userProcesses.map((process, index) => (
+    <li
+      key={index}
+      className="py-2 px-4 border-b border-gray-700 last:border-none hover:bg-gray-700 transition"
+    >
+      <span className="text-blue-300">{process.processName || "Unknown Process"}</span> {" "}
+  
+    </li>
+  ))}
+</ul>
+
+        )}
+      </div>
     </div>
   );
 }

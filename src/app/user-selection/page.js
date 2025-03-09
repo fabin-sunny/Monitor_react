@@ -9,16 +9,18 @@ export default function UserSelectionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Automatically get the IP address or localhost
+  const API_BASE_URL = `http://${window.location.hostname}:9090`;
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:9090/api/stats");
+        const response = await fetch(`${API_BASE_URL}/api/stats`);
         if (!response.ok) throw new Error("Failed to fetch data");
 
         const data = await response.json();
         if (!Array.isArray(data)) throw new Error("Invalid data format");
 
-        // Extract unique users with their IDs
         const uniqueUsers = [];
         const seenUsers = new Set();
 
@@ -57,11 +59,11 @@ export default function UserSelectionPage() {
           <ul className="space-y-2">
             {users.map(({ id, user }) => (
               <li
-                key={`${id}-${user}`} // Unique key fix
+                key={`${id}-${user}`}
                 className="p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 text-center flex items-center justify-center space-x-2"
                 onClick={() => handleUserSelect(user)}
               >
-                <span className="text-gray-400 font-semibold">{id}.</span>
+                <span className="text-gray-400 font-semibold">#{id}</span>
                 <span>{user}</span>
               </li>
             ))}
