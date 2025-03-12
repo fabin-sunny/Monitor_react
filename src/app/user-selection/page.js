@@ -9,10 +9,9 @@ export default function UserSelectionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Automatically get the IP address or localhost
-  const API_BASE_URL = `http://${window.location.hostname}:9090`;
-
   useEffect(() => {
+    const API_BASE_URL = `http://${window.location.hostname}:9090`;
+
     const fetchUsers = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/stats`);
@@ -44,7 +43,7 @@ export default function UserSelectionPage() {
   }, []);
 
   const handleUserSelect = (username) => {
-    router.push(`/dashboard?user=${encodeURIComponent(username)}`);
+    router.push(`/dashboard/${encodeURIComponent(username)}`);
   };
 
   return (
@@ -60,11 +59,11 @@ export default function UserSelectionPage() {
             {users.map(({ id, user }) => (
               <li
                 key={`${id}-${user}`}
-                className="p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 text-center flex items-center justify-center space-x-2"
+                className="p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 text-center flex justify-between items-center px-4 w-full"
                 onClick={() => handleUserSelect(user)}
               >
-                <span className="text-gray-400 font-semibold">#{id}</span>
-                <span>{user}</span>
+                <span className="text-gray-400 font-semibold">{id}</span>
+                <span className="flex-grow text-center">{user}</span>
               </li>
             ))}
           </ul>
