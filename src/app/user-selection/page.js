@@ -25,7 +25,11 @@ export default function UserSelectionPage() {
 
         data.forEach((item) => {
           if (!seenUsers.has(item.user)) {
-            uniqueUsers.push({ id: item.id, user: item.user });
+            uniqueUsers.push({
+              user: item.user,
+              ipAddress: item.ipAddress,
+              status: item.status || "unknown",
+            });
             seenUsers.add(item.user);
           }
         });
@@ -47,28 +51,41 @@ export default function UserSelectionPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-bold text-center mb-4">Select a User</h2>
-        {loading ? (
-          <p className="text-center">Loading users...</p>
-        ) : error ? (
-          <p className="text-center text-red-500">{error}</p>
-        ) : (
-          <ul className="space-y-2">
-            {users.map(({ id, user }) => (
-              <li
-                key={`${id}-${user}`}
-                className="p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 text-center flex justify-between items-center px-4 w-full"
-                onClick={() => handleUserSelect(user)}
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
+      
+      <h2 className="text-4xl font-bold text-center mb-8 text-blue-400">
+        Connected Systems
+      </h2>
+
+      {loading ? (
+        <p className="text-center text-lg">Loading users...</p>
+      ) : error ? (
+        <p className="text-center text-red-500">{error}</p>
+      ) : (
+        <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          {users.map(({ user, ipAddress, status }) => (
+            <div
+              key={user}
+              className="p-8 bg-gray-800 rounded-xl shadow-lg transform transition-transform hover:scale-105 hover:shadow-xl cursor-pointer border-2 border-gray-600"
+              onClick={() => handleUserSelect(user)}
+            >
+              <h3 className="text-2xl font-bold">{user}</h3>
+              <p className="text-lg text-gray-400 mt-2">IP: {ipAddress}</p>
+              <p
+                className={`text-lg font-bold mt-3 ${
+                  status.toLowerCase() === "active"
+                    ? "text-green-400"
+                    : status.toLowerCase() === "inactive"
+                    ? "text-red-400"
+                    : "text-yellow-400"
+                }`}
               >
-                <span className="text-gray-400 font-semibold">{id}</span>
-                <span className="flex-grow text-center">{user}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                {status.toUpperCase()}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
